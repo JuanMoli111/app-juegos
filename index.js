@@ -54,6 +54,9 @@ app.get("/reversi/get/:boardId", getReversi);
         console.log('ZZZZZZZZ')
 
         const board = reversiManagement.newGame();
+
+        const player1Id = board.keys.player1Id;
+
         console.log(board);
         res.status(200).send(board);
     }
@@ -67,7 +70,8 @@ app.get("/reversi/get/:boardId", getReversi);
         console.log(req.body)
         console.log('ZZZZZZZZ')
         const board = reversiManagement.joinGame(req.body.boardId);
-        
+        //const player2Id = req.body.keys.player2Id;
+
         if (board) {
             res.status(200).send(board);
         } else {
@@ -81,7 +85,13 @@ app.get("/reversi/get/:boardId", getReversi);
 
         //Busca la partida segun el boardId en request params
         const game = reversiManagement.getGame(req.params.boardId);
+        
+        
 
+        console.log('MOVED, REQ BODY:')
+        console.log(req.body);
+        console.log('REQ PARAMS:')
+        console.log(req.params);
 
         reversiManagement.updateGame(req.params.boardId)
 

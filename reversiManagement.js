@@ -1,6 +1,5 @@
 const fs = require("fs");
 const rawdata = fs.readFileSync("./ReversiGames.json");
-
 //Partidas dl JSON
 const games = JSON.parse(rawdata);
 
@@ -39,6 +38,8 @@ function newGameKeys() {
 //Crea una partida
 function newGame() {
 
+    console.log('llamo a new game en revesimanagement');
+
     //Genera los datos de la partida, esto son las keys (IDs) la informacion del turno, y del tablero
     let game = {
         keys: newGameKeys(),
@@ -54,24 +55,25 @@ function newGame() {
         if (err) reject(err);
     });
 
+
     //Retorna el juego
     return game;
 }
 
 //Unirse a una partida
 function joinGame(boardId) {
-
+    console.log('my boardID being: ', boardId);
     //busca una partida para unirse por ID, esta es una partida tal que tenga el mismo ID y no se haya unido un segundo player aun 
     let game = games.find(
         (e) => e.keys.boardId == boardId && e.keys.player2Id == null
     );
 
+    console.log('game is: ',game);
+ 
     //Si existe tal partida
     if (game) {
 
         //Borrar objecto con mismo boardId ¿?
-        const pos = games.findIndex((e) => e.keys.boardId == boardId);
-        games.splice(pos, 1);
 
         //Genera y guarda el nuevo id del jugador que esta entrando
         game.keys.player2Id = generateId(5);
@@ -153,6 +155,29 @@ function getGameByPlayerId(playerId){
         return false;
 }
 
+//Busca una partida por  ID de jugador, retorna un objeto con la partida y  un indicador de si es el player 1 o 2
+function playerInThisGame(playerId){
+
+    //Busca el juego por playerId, isPlayer1 será falso si ningun juego coincide, y sera el juego que encuentre si existe
+    let isPlayer1 = games.reverse().find((e) => e.keys.player1Id == playerId && e.keys.player2Id != null);
+    
+    //Busca el juego por playerId, isPlayer2 será falso si ningun juego coincide, y sera el juego que encuentre si existe
+    let isPlayer2 = games.reverse().find((e) => e.keys.player2Id == playerId && e.keys.player2Id != null);
+     
+    console.log('isplayer1 es: ', isPlayer1)
+    console.log('isplayer2 es: ', isPlayer2)
+
+    if(isPlayer1)return isPlayer1;
+    else if(isPlayer2) return isPlayer2;
+
+
+    if (game)
+        return game;
+    else
+        return false;
+
+
+}
 
 module.exports = {
     newGame,
