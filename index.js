@@ -35,10 +35,6 @@ app.get("/battleship", (req, res) => {
     res.render("battleship", { titulo: "Battleship"});
 });
 
-/*app.get("/revesi/move/:boardId", (req, res)=>{
-    res.render("reversi",{titulo:"Reversi",game:reversiManagement.getGame(boardId)})
-})
-*/
 
 //Reversi
 app.post("/reversi/new", newReversi);
@@ -54,10 +50,10 @@ app.get("/reversi/get/:boardId", getReversi);
         //Crea el tablero 
         const board = reversiManagement.newGame();
 
-
         //Response
         res.status(200).send(board);
     }
+
 
     //Player 2 entro a reversi, le envia la informacion del tablero
     function joinReversi(req, res) {
@@ -72,17 +68,17 @@ app.get("/reversi/get/:boardId", getReversi);
         }
     }
 
-
     //el jugador hizo un movimiento, verificamos con su ID si existe su partida y si es su turno
+    // si pudo mover mandamos a actualizar la informacion en el JSON y respondemos el game actualizado
+    // si no pudo mover respondemos con response vacio
     function moveReversi(req, res){
-        console.log('AAA', req.body.boardId)
+
         //Busca la partida segun el boardId en request params
         let game = reversiManagement.getGame(req.body.boardId);
-        console.log(game);
+        
         //Recibe en el body request el ID del player que jugo su turno
         let playerId = req.body.playerId;
         let couldMove = false;
-
 
         if(game != false){
             
@@ -134,9 +130,7 @@ app.get("/reversi/get/:boardId", getReversi);
     //Retorna el estado mas reciente de la partida, si es que esta existe
     function getReversi(req, res){
 
-
         const game = reversiManagement.getGame(req.params.boardId);
-        
         
 
         if (game) {

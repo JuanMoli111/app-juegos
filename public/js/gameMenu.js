@@ -1,9 +1,6 @@
 
 
-/* 
-fetchGame() hace un fetch(de tipo get) cada 2 segundos, 
-trae la informacion de la partida constantemente (por ahora solo imprime) 
-*/
+
 /*function fetchGames(currentGame){
 
     //Deberia setear el intervalo cada dos segundos hasta que haya fetcheado una partida con turno, entonces primero debe mover ahsta empezar a setear de nuevo lso timeouts
@@ -36,6 +33,11 @@ trae la informacion de la partida constantemente (por ahora solo imprime)
     }, 2000)
 
 }*/
+
+/* 
+fetchGame() hace un fetch(de tipo get) cada 2 segundos, 
+trae la informacion de la partida constantemente (por ahora solo imprime) 
+*/
 function fetchGame(currentGame){
 
     //Deberia setear el intervalo cada dos segundos hasta que haya fetcheado una partida con turno, entonces primero debe mover ahsta empezar a setear de nuevo lso timeouts
@@ -58,8 +60,6 @@ function fetchGame(currentGame){
                 //RECIBO EL ULTIMO JUEGO REGISTRADO, SI EL  BOARD Y EL TURN SON EL MISMO
                 //ENTONCES AUN NO RECIBIMOS UN MOVE DEL OTRO PLAYER
                 //SI EL MOVE SE HIZO ACTUALIZAR TODO EL TABLERO!
-            //console.log('fetching get get getS')
-            //Si el turno o el player2 es nulo, la partida no fue iniciada
 
             if(currentGame.turn == latestGame.turn){
                 console.log('NADA CAMBIO SIGAMOS FETCHIANDO')
@@ -80,12 +80,8 @@ function fetchGame(currentGame){
 startGame() se ejecuta cuando UN cliente crea o se suma a una partida,
 ejecuta fetchGAME(),
 elimina el menu y muestra el juego(por ahora solo boton de turno),
-a su vez muestra el id de la partida y qué jugador es (1 o 2),
 */
 function startGame(){
-    
-
-
     //'Elimina' el menu
     document.getElementById("game-menu").style.display = 'none';
     document.getElementById("menu").style.display = 'none';
@@ -98,10 +94,7 @@ function startGame(){
 function joinGame(){
     localStorage.clear();
 
-
     startGame();
-
-
 
     //Salva el ID del tablero, que habiamos generado en el HTML
     const data = {
@@ -117,7 +110,7 @@ function joinGame(){
         body: JSON.stringify(data)
     }
     
-    //fetch a reversi/join, peticion PATCH
+    //fetch a reversi/join, peticion PATCH que recibe la data del tablero en la response
     fetch('/reversi/join',options)
     .then(response => {
         if (response.ok) {
@@ -128,12 +121,8 @@ function joinGame(){
     })
     .then(boardData => {
         
-        //tenemos todos los datos del tablero aqui
-        console.log('printing board data at startgame:',boardData);
-        
 
-        
-        //Salva el elemento para la info del player
+        //Salva el elemento designado para la info del player
         const player = document.getElementById("player-data");
 
         let boardId = boardData.keys.boardId
@@ -145,18 +134,12 @@ function joinGame(){
         localStorage.setItem('player1Id',player1Id);
         localStorage.setItem('player2Id', player2Id);
 
-        //const gameData = boardData;
 
+        //Informa el ID del player 2, ID del tablero y sus datos
         player.innerHTML = `<br>Jugador 2 ID:${player2Id}: `;
-        localStorage.setItem('player1Id',player1Id);
-        localStorage.setItem('player2Id',player2Id);
-        
-
-        //Informa la ID del tablero, appendChild lo agrega al HTML
         player.innerHTML += `<br> Id del tablero: ${boardData.keys.boardId}`;
         player.innerHTML += `<br> BOARD ${boardData.board}`;
 
-        //playerData.appendChild(player);
 
         return boardData;
     })
@@ -166,11 +149,9 @@ function joinGame(){
 }
 
 
-//newGame() crea una partida (player1) y ejecuta startGame()
+//newGame() crea una partida (player1) 
 function newGame(){
     startGame();
-
-    //Salva el elemento para la info del player
 
     //Setting de la peticion POST
     const options = {
@@ -191,21 +172,20 @@ function newGame(){
     })
     .then(boardData => {
   
+        //Salva el elemento designado para la info del player
         const player = document.getElementById("player-data");
 
-
+        //Salva los IDS necesarios del tablero recibido
         let boardId = boardData.keys.boardId
         let player1Id = boardData.keys.player1Id;
 
-        //Crear un item en el local storage para el ID del tablero, abajo guarda el del user tmb
+        //Crear un item en el local storage para el ID del tablero, id del player2 y del player 1
         localStorage.setItem('boardId',boardId);
         localStorage.setItem('player2Id', null);
         localStorage.setItem('player1Id',player1Id);
 
-
+        //Informa el ID del player 1, ID del tablero y sus datos
         player.innerHTML = `<br>Jugador 1 ID:${player1Id}: `;
-
-        //Informa la ID del tablero, appendChild lo agrega al HTML
         player.innerHTML += `<br> Id del tablero: ${boardId}`;
         player.innerHTML += `<br> BOARD ${boardData.board}`;
     
@@ -218,16 +198,15 @@ function newGame(){
 function fetchTurn(){
 
     //Conseguimos el ID del player segun los datos HTML
-    const player = document.getElementById('player-data');
+    let player = document.getElementById('player-data');
 
-    //Salva el ID del user actual
+    //Salva el ID del user que esta moviendo su turno
     let playerId = player.innerHTML.split(':')[1];
+    let boardId = localStorage.getItem('boardId');
 
-    console.log('Player ID moving being: ',playerId);
-    
+    console.log('Player ID moving: ',playerId);
 
-    const boardId = localStorage.getItem('boardId');
-    console.log('board ',boardId)
+
     //Salva el ID del board Y el ID del player que movió
     const data = {
         boardId : boardId,
@@ -254,6 +233,8 @@ function fetchTurn(){
         }
     })
     .then(boardData => {
+
+        //Si llego aqui es por que pudo mover, actualiza el tablero y reinicia el loop de fetchs para esperar su turno
         updateBoard(boardData);
         fetchGame(boardData);
     })
@@ -261,21 +242,16 @@ function fetchTurn(){
 
 }
 
+//Actualiza la informacion del tablero, por ahora solo setea todos los datos indicando de quien es EL TURNO
 function updateBoard(boardData){
 
     for(let i = 0; i < 8; i++){
         for(let j = 0; j < 8; j++){
 
-
             let id = `cell${i}${j}`;
             let p = document.getElementById(id);
 
             p.textContent = `   ${boardData.turn}  `
-            //console.log(`p es de tipo ${typeof p} y el texto ${p.remo}`)
-            ///document.getElementById(`cell${i}${j}`).innerHTML(boardData.turn);
-
-            //11document.getElementById(`cell${i}${j}`).innerText(boardData.turn);
-
 
         }
     }
