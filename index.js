@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
 const reversiManagement = require("./reversiManagement");
 const app = express();
@@ -34,6 +35,10 @@ app.get("/battleship", (req, res) => {
     res.render("battleship", { titulo: "Battleship"});
 });
 
+/*app.get("/revesi/move/:boardId", (req, res)=>{
+    res.render("reversi",{titulo:"Reversi",game:reversiManagement.getGame(boardId)})
+})
+*/
 
 //Reversi
 app.post("/reversi/new", newReversi);
@@ -46,34 +51,22 @@ app.get("/reversi/get/:boardId", getReversi);
     //player 1 entro a reversi, le envia la informacion del nuevo tablero
     function newReversi(req, res) {
 
-
-        console.log('ZZZZZZZZ   NEW REVERSI')
-        console.log(req.params)
-        console.log('ZZZZZZZZ')
-        console.log(req.body)
-        console.log('ZZZZZZZZ')
-
+        //Crea el tablero 
         const board = reversiManagement.newGame();
 
-        const player1Id = board.keys.player1Id;
 
-        console.log(board);
+        //Response
         res.status(200).send(board);
     }
 
     //Player 2 entro a reversi, le envia la informacion del tablero
     function joinReversi(req, res) {
 
-        console.log('ZZZZZZZZ   JOIN REVERSI')
-        console.log(req.params)
-        console.log('ZZZZZZZZ')
-        console.log(req.body)
-        console.log('ZZZZZZZZ')
-        const board = reversiManagement.joinGame(req.body.boardId);
+        //se una a la partida ( creando un nuevo registro) con el ID del player 2, devuelve el game que esta jugando
+        const game = reversiManagement.joinGame(req.body.boardId);
         //const player2Id = req.body.keys.player2Id;
-
-        if (board) {
-            res.status(200).send(board);
+        if (game) {
+            res.status(200).send(game);
         } else {
             res.status(400).send();
         }
@@ -82,36 +75,76 @@ app.get("/reversi/get/:boardId", getReversi);
 
     //el jugador hizo un movimiento, verificamos con su ID si existe su partida y si es su turno
     function moveReversi(req, res){
-
+        console.log('AAA', req.body.boardId)
         //Busca la partida segun el boardId en request params
-        const game = reversiManagement.getGame(req.params.boardId);
-        
-        
+        let game = reversiManagement.getGame(req.body.boardId);
+        console.log(game);
+        //Recibe en el body request el ID del player que jugo su turno
+        let playerId = req.body.playerId;
+        let couldMove = false;
 
-        console.log('MOVED, REQ BODY:')
-        console.log(req.body);
-        console.log('REQ PARAMS:')
-        console.log(req.params);
 
-        reversiManagement.updateGame(req.params.boardId)
+        if(game != false){
+            
+            let isPlayer1 = (playerId == game.keys.player1Id);
 
-        if(game){
-            res.status(200).send(game);
-        } else {
+            //Si pudo mover, cambia el turno, sino debe seguir esperando su turno
+
+            //SI ES PLAYER1
+            if(isPlayer1){
+                if(game.turn == 'P1'){
+                    console.log('PLAYER 1 PUDO MOVER');
+                    game.turn = 'P2';
+                    couldMove = true;
+                }
+                else if(game.turn == 'P2')
+                    console.log('PLAYER 1 NO PUEDE MOVER')
+            } else //SI ES PLAYER 2:
+            {
+                if(game.turn == 'P2'){
+                    console.log('PLAYER 2 PUDO MOVER');
+                    game.turn = 'P1';
+                    couldMove = true;
+                }
+                else if(game.turn == 'P1')
+                    console.log('PLAYER 2 NO PUEDE MOVER')
+            }
+
+
+            /*
+            Aqui mannejariamos el cambio del tablero para mandarlo a guardar (game), luego en el respnse de esta peticion alteramos efectivamente el tablero 
+            */
+
+
+            //Solo si pudo mover actualizamos data y enviamos game en el response
+            if(couldMove){
+                //Manda el game con los turnos actualizados para que salve este nuevo registro del estado de la partida
+                game = reversiManagement.updateGame(game)
+                res.status(200).send(game);
+            } else {
+                res.status(400).send();   
+            }
+            //Sino response vacio
+        } else               
+        {
             res.status(400).send();
         }
     }
 
-    //Retorna el estado de la partida constantemente si es existente
+    //Retorna el estado mas reciente de la partida, si es que esta existe
     function getReversi(req, res){
-        
+
+
         const game = reversiManagement.getGame(req.params.boardId);
+        
+        
 
         if (game) {
             res.status(200).send(game);
         } else {
             res.status(400).send();
         }
+
     }
 
 

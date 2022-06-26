@@ -12,14 +12,12 @@ const PLAY2 = "P2";
 //Genera el tablero incial de reversi, con las fichas centrales siendo dos para cada player, y el resto vacias
 /// detalle a implementar:  reversi puede iniciar con las fichas repartidas de disintas formas aleatoriamente
 function generateBoard(){
-    let board = [...Array(9)].map(e => Array(9).fill(EMPTY));
+    let board = [...Array(8)].map(e => Array(8).fill(EMPTY));
     board[3][3] = PLAY2; board[3][4] = PLAY1; board[4][3] = PLAY1; board[4][4] = PLAY2;
     return board;
 }
 
-function setCell(){
 
-}
 
 //Generar un ID unico de cierto tamaño recibido por parametro, este será un string generado aleatoriamente y muy dificil de crackear
 function generateId(tamanio) {
@@ -62,14 +60,13 @@ function newGame() {
 
 //Unirse a una partida
 function joinGame(boardId) {
-    console.log('my boardID being: ', boardId);
+    
     //busca una partida para unirse por ID, esta es una partida tal que tenga el mismo ID y no se haya unido un segundo player aun 
     let game = games.find(
         (e) => e.keys.boardId == boardId && e.keys.player2Id == null
     );
 
-    console.log('game is: ',game);
- 
+
     //Si existe tal partida
     if (game) {
 
@@ -93,26 +90,18 @@ function joinGame(boardId) {
 }
 
 //Cada movimiento genera un nuevo registro de la partida en el json, con el tablero nuevo y cambiando el turno 
-function updateGame(boardId){
+function updateGame(game){
 
-    let game = games.reverse().find(
+    /*let game = games.reverse().find(
         (e) => e.keys.boardId == boardId && e.keys.player2Id != null 
-    );
+    );*/
 
     //Si existe tal partida
     if (game) {
 
 
+        console.log('about to save this game',game)
         ///Actualizar info del tablero
-
-        //Cambiar el turno?
-        if(game.turn == "P1"){
-            game.turn = "P2";
-        } else if(game.turn == "P2"){
-            game.turn = "P1";
-        }
-            
-
         //Reescribir JSON
         games.push(game);
         fs.writeFileSync("./ReversiGames.json", JSON.stringify(games), (err) => {
@@ -127,7 +116,7 @@ function updateGame(boardId){
 //Retorna el estado de la partida si es existente
 function getGame(boardId){
     //Busca el juego por boardId
-    let game = games.reverse().find((e) => e.keys.boardId == boardId);
+    let game = games.find((e) => e.keys.boardId == boardId);
     if (game)
         return game;
     else

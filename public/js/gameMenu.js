@@ -4,29 +4,76 @@
 fetchGame() hace un fetch(de tipo get) cada 2 segundos, 
 trae la informacion de la partida constantemente (por ahora solo imprime) 
 */
-function fetchGame(boardId){
+/*function fetchGames(currentGame){
 
+    //Deberia setear el intervalo cada dos segundos hasta que haya fetcheado una partida con turno, entonces primero debe mover ahsta empezar a setear de nuevo lso timeouts
     setInterval(function(){ 
 
-        //ifes su turno.. (mediante localstorage?)
-        //fetch, peticion GET, a la ruta pull/boardID, osea a hacerturno ponele
-        fetch(`/reversi/get/${boardId}`)
+        fetch(`/reversi/get/${currentGame.keys.boardId}`)
         .then(response => {
             if (response.ok) {
-
-                //Si hubo un turno debería hacer algo??
-
+                //RECIBO EL JUEGO MAS ACTUALIZADO, SI EL  BOARD Y EL TURN SON EL MISMO
+                //ENTONCES DECIRLE FETCH NO RECIBIO UN MOVE DL OTRO PLAYER
+                //SI EL MOVE SE HIZO ACTUALIZAR TODO EL TABLERO!
+                
 
                 return response.json()
             } else{
                 throw new Error ("No es posible obtener el estado de la partida.");
             }
         })
-        .then(json => console.log('print json: ', json))
+        .then(lastestGame => {
+        
+            if(currentGame.board == lastestGame.board && currentGame.turn == lastestGame.turn){
+                console.log('NADA CAMBIO FETCHIE AL PEDO')
+            } else{
+                console.log('EL OTRO PLAYER MOVIO!!!')
+                updateBoard(lastestGame);
+            }
+            
+        })
         .catch(err => console.log(err));
+    }, 2000)
+
+}*/
+function fetchGame(currentGame){
+
+    //Deberia setear el intervalo cada dos segundos hasta que haya fetcheado una partida con turno, entonces primero debe mover ahsta empezar a setear de nuevo lso timeouts
+
+    //Generar un intervalo que aga el fetch cada dos segundos, salvar su ID para detenerlo cuando llega su turno
+    let idInterval = setInterval(function() { 
+
+        //Fetch a la url get seguido del ID del tabler
+        fetch(`/reversi/get/${currentGame.keys.boardId}`)
+        .then(response => {
+            if (response.ok) {
+                
+                
+                return response.json()
+            } else{
+                throw new Error ("No es posible obtener el estado de la partida.");
+            }
+        })
+        .then(latestGame => {
+                //RECIBO EL ULTIMO JUEGO REGISTRADO, SI EL  BOARD Y EL TURN SON EL MISMO
+                //ENTONCES AUN NO RECIBIMOS UN MOVE DEL OTRO PLAYER
+                //SI EL MOVE SE HIZO ACTUALIZAR TODO EL TABLERO!
+            //console.log('fetching get get getS')
+            //Si el turno o el player2 es nulo, la partida no fue iniciada
+
+            if(currentGame.turn == latestGame.turn){
+                console.log('NADA CAMBIO SIGAMOS FETCHIANDO')
+            } else{
+                console.log('EL OTRO PLAYER MOVIO!!!')
+                updateBoard(latestGame);
+                clearInterval(idInterval);
+            } 
+            
+        })
+        .catch(err => console.log(err))
     }, 2000);
 
-
+    
 }
 
 /*  
@@ -40,11 +87,11 @@ function startGame(){
 
 
     //'Elimina' el menu
+    document.getElementById("game-menu").style.display = 'none';
     document.getElementById("menu").style.display = 'none';
-
     //Setea un estilo al elem game, como este era nulo, recien entonces se muestra en pantalla
-    const game = document.getElementById("game");
-    game.style.display = 'flex';
+    const gameElement = document.getElementById("game");
+    gameElement.style.display = 'flex';
 }
 
 //joinGame() se une a una partida (player2) y ejecuta startGame()
@@ -87,7 +134,7 @@ function joinGame(){
 
         
         //Salva el elemento para la info del player
-        const player = document.createElement("h4");
+        const player = document.getElementById("player-data");
 
         let boardId = boardData.keys.boardId
         let player1Id = boardData.keys.player1Id;
@@ -109,18 +156,15 @@ function joinGame(){
         player.innerHTML += `<br> Id del tablero: ${boardData.keys.boardId}`;
         player.innerHTML += `<br> BOARD ${boardData.board}`;
 
-        game.appendChild(player);
+        //playerData.appendChild(player);
 
         return boardData;
     })
-    .then(boardData => fetchGame(boardData.keys.boardId))
-    .catch(err => console.log(err));
-
-
     //Primer llamado a fetchGame, este es el fetch que, en loop, verifica si el otro player realizo un turno
-    
-    
+    .then(boardData => fetchGame(boardData))
+    .catch(err => console.log(err));
 }
+
 
 //newGame() crea una partida (player1) y ejecuta startGame()
 function newGame(){
@@ -147,7 +191,7 @@ function newGame(){
     })
     .then(boardData => {
   
-        const player = document.createElement("h4");
+        const player = document.getElementById("player-data");
 
 
         let boardId = boardData.keys.boardId
@@ -166,7 +210,6 @@ function newGame(){
         player.innerHTML += `<br> BOARD ${boardData.board}`;
     
     
-        game.appendChild(player);
     })
     .catch(err => console.log(err));
 }
@@ -174,29 +217,24 @@ function newGame(){
 //Un jugador mueve su turno
 function fetchTurn(){
 
-    //COMPROBAR SI EL PLAYER PUEDE JUGAR EN ESTE TURNO?? SI PUEDE ENTONCES HACE EL PATCH, EL PATCH DEBE MODIFICAR UN RECURSO
-    ///comprobar si el registro del localstorage es un id de user
-    ////buscar la partida de ese user
-    //verificar si es su turno
-
-    const player = document.querySelector('h4');
+    //Conseguimos el ID del player segun los datos HTML
+    const player = document.getElementById('player-data');
 
     //Salva el ID del user actual
     let playerId = player.innerHTML.split(':')[1];
 
     console.log('Player ID moving being: ',playerId);
+    
 
     const boardId = localStorage.getItem('boardId');
-
-
-    //Salva el ID del board del local storage
+    console.log('board ',boardId)
+    //Salva el ID del board Y el ID del player que movió
     const data = {
-        boardId : boardId
+        boardId : boardId,
+        playerId: playerId
     }
     
-    //PRIMERO UN GET DESPUES UN PATCH??
-
-    //Settings de la peticion PATCH o GET??
+    //Settings de la peticion PATCH 
     const options = {
         method: 'PATCH',
         headers: {
@@ -205,26 +243,40 @@ function fetchTurn(){
         body: JSON.stringify(data)
     }
 
-    //fetch a reversi/move/boardId, peticion PATCH
+    //fetch a reversi/move/boardId, peticion PATCH, LA PETICION RECIBE EL BOARDID Y EL PLAYERID QUE REALIZO EL MOVIMIENTO
     fetch(`/reversi/move/${boardId}`,options)
     .then(response => {
         if (response.ok) {
+            console.log('pude mover');
             return response.json()
         } else{
-            throw new Error ("ID de tablero inválida.");
+            throw new Error ("No pude mover :(");
         }
     })
     .then(boardData => {
-        console.log('fetching turn boardData: ',boardData)
-
-        
-
-
-
-
+        updateBoard(boardData);
+        fetchGame(boardData);
     })
     .catch(err => console.log(err));
 
-    //return data;
 }
 
+function updateBoard(boardData){
+
+    for(let i = 0; i < 8; i++){
+        for(let j = 0; j < 8; j++){
+
+
+            let id = `cell${i}${j}`;
+            let p = document.getElementById(id);
+
+            p.textContent = `   ${boardData.turn}  `
+            //console.log(`p es de tipo ${typeof p} y el texto ${p.remo}`)
+            ///document.getElementById(`cell${i}${j}`).innerHTML(boardData.turn);
+
+            //11document.getElementById(`cell${i}${j}`).innerText(boardData.turn);
+
+
+        }
+    }
+}

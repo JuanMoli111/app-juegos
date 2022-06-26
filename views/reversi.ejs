@@ -1,16 +1,47 @@
 <%-include('templates/head')%>
 
+<link rel="stylesheet" href="./css/battleship.css">
 
 </head>
 
-    <body>
-        <%-include('templates/header')%>
+<body>
+    <%-include('templates/header')%>
+
+    <div id="game-menu">
         <%-include('templates/gameMenu')%>
-        <div id="game">
-            <button onclick ="fetchTurn()" id='move-button' > Turno </button>
-        </div>
-    </body>
+    </div>
+    <div id="game">
+
+
+        
+        <table>
+            <tr>
+            
+            <% for(var i = 0;  i < 8; i++){ %>
+                <td>
+                <% for(var j = 0; j < 8; j++){%>
+                     <p id = "cell<%= i %><%= j %>"> 
+                        DATA 
+                     <p>
+              
+                <% }%>
+                </td>
+            <% }%>
+            </tr>
+        </table>
+        
+    </div>
+    <button onclick ="fetchTurn()" id='move-button' > Turno </button>
+    <div id="player-data">
+
+    </div>
     
+</body>
 
 
-    </html>
+
+</html>
+
+<!--                     <p id = `cell${i}${j}`> 
+                        DATA 
+                     <p>-->
