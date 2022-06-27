@@ -1,4 +1,3 @@
-const { response } = require("express");
 const express = require("express");
 const reversiManagement = require("./reversiManagement");
 const app = express();
@@ -82,6 +81,7 @@ app.get("/reversi/get/:boardId", getReversi);
 
         if(game != false){
             
+            //Para saber si jugo el player 1 o el 2
             let isPlayer1 = (playerId == game.keys.player1Id);
 
             //Si pudo mover, cambia el turno, sino debe seguir esperando su turno
@@ -107,9 +107,12 @@ app.get("/reversi/get/:boardId", getReversi);
             }
 
 
-            /*
-            Aqui mannejariamos el cambio del tablero para mandarlo a guardar (game), luego en el respnse de esta peticion alteramos efectivamente el tablero 
-            */
+            
+            ///Aqui manejariemos el cambio del tablero antes de mandarlo a guardar (game) por ejemplo cambiar la variable turno,
+            // cambiar el contenido del tablero por que movio una ficha.. etc.
+
+            ///,luego en el respnse de esta peticion, ya del lado del cliente, alterariamos efectivamente
+            //   el tablero real que vemos en el front con los datos de este game modificado
 
 
             //Solo si pudo mover actualizamos data y enviamos game en el response
