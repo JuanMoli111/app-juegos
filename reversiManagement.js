@@ -182,7 +182,7 @@ function validarEncierra(board,x,y,xDir,yDir,play){
 
         
             //Mientras las fichas del recorrido sean del adversario
-            while((board[x + xDir][y + yDir] != null) && !encierra){
+            while((board[x + xDir] != undefined) && (board[x + xDir][y + yDir] != undefined) && (board[x + xDir][y + yDir] != null) && !encierra){
 
                 x += xDir;  y += yDir;
 
@@ -228,53 +228,25 @@ function updateBoard(board, square, player){
 
     return board;
 }
-
+// x = filas, y = columnas
 function validateVertical(board,x,y,player){
 
     let fromTop = false; let fromBottom = false;
 
-    //Si esta encerrado por arriba
-    let i = x + 1
-
-    while(i < 8 && !fromTop){
-        
-        if(board[i][y] == null){
-            break
-        }
-
-
-        if(board[i][y] == player){
+    for (let i = x + 1; i < 8; i++) {
+       if(board[i][y] == player){
             fromTop = true;
+            break;
         }
-
-        i++
     }
 
-    /*for (let i = y+1; i < 8; i++) {
-        if((board[x][i] != null) && (board[x][i] != player)){
-            fromTop = true;
-        }
-    }*/
-    i = x - 1
-    while(i >= 0 && !fromBottom){
-        
-        if(board[i][y] == null){
-            break
-        }
-
-
+    for (let i = x - 1; i >= 0; i--) {
         if(board[i][y] == player){
             fromBottom = true;
+            break;
         }
-
-        i--
     }
-    //Si esta encerrado por abajo
-    /*for (let i = y-1; i >= 0; i--) {
-        if((board[x][i] != null) && (board[x][i] != player)){
-            fromBottom = true;
-        }
-    }*/
+
     console.log("/n")
     console.log(`X: ${x}    Y: ${y}`)
     console.log("/n")
@@ -287,66 +259,93 @@ function validateVertical(board,x,y,player){
 }
 function validateHorizontal(board,x,y,player){
 
-    let fromRight = false, fromLeft = false
+    let fromRight = false;
+    let fromLeft = false;
+
 
     //Si esta encerrado por la derecha
-    for (let i = x; i < 8; i++) {
-        if((board[i][y] != null) && (board[i][y] != player)){
+    for (let i = y + 1; i < 8; i++) {
+        if(board[x][i] == player){
             fromRight = true;
+            break;
         }
     }
 
     //Si esta encerrado por la izquierda
-    for (let i = x; i >= 0; i--) {
-        if((board[i][y] != null) && (board[i][y] != player)){
+    for (let i = y - 1; i >= 0; i--) {
+        if(board[x][i] == player){
             fromLeft = true;
+            break;
         }
     }
-
+    
+    //Si esta encerrado por ambos lados retorna true
     if(fromRight && fromLeft) return true; else return false;
 }
+
+//x = filas Y = columnas
 function validateDiagonals(board,x,y,player){
 
-    let fromTopLeft = false, fromBottomRight = false
-    let fromTopRight = false, fromBottomLeft = false
+    let fromTopLeft = false; let fromBottomRight = false;
+    let fromTopRight = false; let fromBottomLeft = false;
 
     //Si esta encerrado por la diagonal desde arriba a la izquierda
-    for (let cant = 0; cant < 8; cant++) {
-        if((board[x-cant] != undefined) && (board[x-cant][y+cant] != undefined )){
-            if((board[x-cant][y+cant] != null) && (board[x-cant][y+cant] != player))
+    try {
+        for (let cant = 1; cant < 8; cant++) {
+        
+            if(board[x-cant][y-cant] == player){
                 fromTopLeft = true;
+                break;
+            }
         }
+    } catch (error) {
+        console.log('error')
     }
-    //Si esta encerrado por la diagonal desde abajo a la derecha
-    for (let cant = 0; cant < 8; cant++) {
-        if((board[x+cant] != undefined) && (board[x+cant][y-cant] != undefined)){
-            if((board[x+cant][y-cant] != null) && (board[x+cant][y-cant] != player))
+    try {
+        //Si esta encerrado por la diagonal desde abajo a la derecha
+        for (cant = 1; cant < 8; cant++) {
+            if(board[x+cant][y+cant] == player){
                 fromBottomRight = true;
+                break;
+            }
         }
+    } catch (error) {
+        console.log('error')
     }
-
-
-    //Si esta encerrado por la diagonal desde arriba a la derecha
-    for (let cant = 0; cant < 8; cant++) {
-        if((board[x+cant] != undefined) && (board[x+cant][y+cant] != undefined)){
-            if((board[x+cant][y+cant] != null) && (board[x+cant][y+cant] != player))
+        
+        /*  ------  */
+    try {
+        //Si esta encerrado por la diagonal desde arriba a la derecha
+        for (let cant = 1; cant < 8; cant++) {
+            if(board[x-cant][y+cant] == player){
                 fromTopRight = true;
+                break;
+            }
         }
+    } catch (error) {
+        console.log('error')
     }
-    //Si esta encerrado por la diagonal desde abajo a la izqierda
-    for (let cant = 0; cant < 8; cant++) {
-        if((board[x-cant] != undefined) && (board[x-cant][y-cant] != undefined)){
-            if((board[x-cant][y-cant] != null) && (board[x-cant][y-cant] != player))
+    try {
+        //Si esta encerrado por la diagonal desde abajo a la izqierda
+        for (let cant = 1; cant < 8; cant++) {
+            if(board[x+cant][y-cant] == player){
                 fromBottomLeft = true;
+                break;
+            }
         }
+    } catch (error) {
+        console.log('error')
     }
-    if((fromTopLeft && fromBottomRight) || (fromTopRight && fromBottomLeft)) return true; else return false;
+   
+    if((fromTopLeft && fromBottomRight) || (fromTopRight && fromBottomLeft)) return true
+    else return false;
 }
 
 //Esta funcion recibe un casillero y comprueba si esta encerrado por fichas del color contrario, si asi sucede retorna true
 function validateEveryDirection(board,x,y,player){
+    //Solo si el casillero es del player a convertir
     if(board[x][y] == getOther(player)){
-        if(validateVertical(board,x,y,player) /*|| validateHorizontal(board,x,y,player) || validateDiagonals(board,x,y,player)*/)
+        if(validateVertical(board,x,y,player) || validateHorizontal(board,x,y,player) || validateDiagonals(board,x,y,player))
             return true; 
     }
     return false
