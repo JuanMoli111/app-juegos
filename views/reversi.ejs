@@ -15,23 +15,26 @@
 
         
         <table>
-            <tr>
             
-            <% for(var i = 0;  i < 8; i++){ %>
-                <td>
-                <% for(var j = 0; j < 8; j++){%>
-                     <p id = "cell<%= i %><%= j %>"> 
-                        DATA 
-                     <p>
-              
+            
+            <% for(let i = 0;  i < 8; i++){ %>
+                <tr>
+                
+                <% for(let j = 0; j < 8; j++){%>
+                    <td>
+                    <button  id = "<%= i %><%= j %>"  onclick ="fetchTurn(id)" >
+                        DATA
+                    </button>
+                    </td>
                 <% }%>
-                </td>
+                </tr>
+                
             <% }%>
-            </tr>
+            
         </table>
         
     </div>
-    <button onclick ="fetchTurn()" id='move-button' > Turno </button>
+    <!--<button onclick ="fetchTurn()" id='move-button' > Turno </button>-->
     <div id="player-data">
 
     </div>
